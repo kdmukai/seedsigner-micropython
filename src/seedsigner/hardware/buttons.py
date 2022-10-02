@@ -8,15 +8,15 @@ from seedsigner.models.singleton import Singleton
 
 
 class HardwareButtons(Singleton):
-    KEY_UP_PIN = const(11)
-    KEY_DOWN_PIN = const(10)
-    KEY_LEFT_PIN = const(7)
-    KEY_RIGHT_PIN = const(3)
-    KEY_PRESS_PIN = const(1)
+    KEY_UP_PIN = const(13)
+    KEY_DOWN_PIN = const(14)
+    KEY_LEFT_PIN = const(15)
+    KEY_RIGHT_PIN = const(16)
+    KEY_PRESS_PIN = const(17)
 
-    KEY1_PIN = const(17)
-    KEY2_PIN = const(18)
-    KEY3_PIN = const(14)
+    KEY1_PIN = const(3)
+    KEY2_PIN = const(34)
+    KEY3_PIN = const(33)
 
 
     @classmethod

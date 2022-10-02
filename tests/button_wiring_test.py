@@ -90,17 +90,16 @@ label = lv.label(obj)
 label.set_text("")
 label.center()
 
-exit()
+key1 = machine.Pin(3, machine.Pin.IN, machine.Pin.PULL_UP)
+key2 = machine.Pin(34, machine.Pin.IN, machine.Pin.PULL_UP)
+key3 = machine.Pin(33, machine.Pin.IN, machine.Pin.PULL_UP)
 
-key1 = machine.Pin(17, machine.Pin.IN, machine.Pin.PULL_UP)
-key2 = machine.Pin(18, machine.Pin.IN, machine.Pin.PULL_UP)
-key3 = machine.Pin(14, machine.Pin.IN, machine.Pin.PULL_UP)
+joy_up = machine.Pin(13, machine.Pin.IN, machine.Pin.PULL_UP)
+joy_down = machine.Pin(14, machine.Pin.IN, machine.Pin.PULL_UP)
+joy_left = machine.Pin(15, machine.Pin.IN, machine.Pin.PULL_UP)
+joy_right = machine.Pin(16, machine.Pin.IN, machine.Pin.PULL_UP)
+joy_press = machine.Pin(17, machine.Pin.IN, machine.Pin.PULL_UP)
 
-joy_up = machine.Pin(11, machine.Pin.IN, machine.Pin.PULL_UP)
-joy_down = machine.Pin(10, machine.Pin.IN, machine.Pin.PULL_UP)
-joy_left = machine.Pin(7, machine.Pin.IN, machine.Pin.PULL_UP)
-joy_right = machine.Pin(3, machine.Pin.IN, machine.Pin.PULL_UP)
-joy_press = machine.Pin(1, machine.Pin.IN, machine.Pin.PULL_UP)
 
 buttons = [
     (key1, "KEY1"),
