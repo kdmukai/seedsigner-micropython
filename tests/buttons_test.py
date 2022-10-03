@@ -29,6 +29,8 @@ buttons = HardwareButtons()
 # time.sleep(1)
 
 print("test wait_for on any input")
+
 while True:
-    key = buttons.wait_for(keys=HardwareButtonsConstants.ALL_KEYS)
-    print(key)
+    # allow repeats for directional keys; single response only for center press or KEY1, 2, 3.
+    key = buttons.wait_for(keys=HardwareButtonsConstants.ALL_KEYS, check_release=True, release_keys=HardwareButtonsConstants.KEYS__ANYCLICK)
+    print(HardwareButtonsConstants.get_key_name(key))

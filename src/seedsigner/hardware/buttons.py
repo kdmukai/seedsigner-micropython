@@ -97,7 +97,7 @@ class HardwareButtons:
                             self.cur_input = key
                             self.cur_input_started = time.ticks_ms()  # in milliseconds
                             self.last_input_time = self.cur_input_started
-                            print(f"{key}: started {self.cur_input_started}")
+                            # print(f"{key}: started {self.cur_input_started}")
                             return key
 
                         else:
@@ -126,7 +126,7 @@ class HardwareButtons:
                                 #   round's input and **won't update any of our
                                 #   timekeeping vars**. But once we cross the threshold,
                                 #   we let the repeats fly.
-                                print("ignoring repeat")
+                                # print("ignoring repeat")
                                 pass
 
             time.sleep(0.01) # wait 10 ms to give CPU chance to do other things
@@ -204,3 +204,18 @@ class HardwareButtonsConstants:
     KEYS__ANYCLICK = [KEY_PRESS, KEY1, KEY2, KEY3]
 
     release_lock = True # released when True, locked when False
+
+    key_names = {
+        KEY_UP: "UP",
+        KEY_DOWN: "DOWN",
+        KEY_LEFT: "LEFT",
+        KEY_RIGHT: "RIGHT",
+        KEY_PRESS: "PRESS",
+        KEY1: "KEY1",
+        KEY2: "KEY2",
+        KEY3: "KEY3",
+    }
+
+    @classmethod
+    def get_key_name(cls, key: int) -> str:
+        return cls.key_names[key]
