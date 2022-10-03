@@ -1,83 +1,93 @@
 from micropython import const
-from typing import List
 
-import machine
+from machine import Pin
 import time
 
 from seedsigner.models.singleton import Singleton
 
 
-class HardwareButtons(Singleton):
-    KEY_UP_PIN = const(13)
-    KEY_DOWN_PIN = const(14)
-    KEY_LEFT_PIN = const(15)
-    KEY_RIGHT_PIN = const(16)
-    KEY_PRESS_PIN = const(17)
+class HardwareButtons:
+    # @classmethod
+    # def get_instance(cls):
+    #     # This is the only way to access the one and only instance
+    #     if cls._instance is None:
+    #         instance = cls.__new__(cls)
+    #         cls._instance = instance
 
-    KEY1_PIN = const(3)
-    KEY2_PIN = const(34)
-    KEY3_PIN = const(33)
+    def __init__(self, pin_mapping: dict = None):        
+        if not pin_mapping:
+            pin_mapping = {
+                HardwareButtonsConstants.KEY_UP: 13,
+                HardwareButtonsConstants.KEY_DOWN: 14,
+                HardwareButtonsConstants.KEY_LEFT: 15,
+                HardwareButtonsConstants.KEY_RIGHT: 16,
+                HardwareButtonsConstants.KEY_PRESS: 17,
+                HardwareButtonsConstants.KEY1: 3,
+                HardwareButtonsConstants.KEY2: 34,
+                HardwareButtonsConstants.KEY3: 33,
+            }
+        
+        self.pins = {}
+        for key, pin_num in pin_mapping.items():
+            pin = Pin(pin_num, Pin.IN, Pin.PULL_UP)
+            self.pins[key] = pin
+            pin.irq(handler=HardwareButtons.rising_callback, trigger=Pin.IRQ_RISING)
 
+        self.override_ind = False
 
-    @classmethod
-    def get_instance(cls):
-        # This is the only way to access the one and only instance
-        if cls._instance is None:
-            instance = cls.__new__(cls)
-            cls._instance = instance
-
-            #init GPIO
-            instance.key1 = machine.Pin(cls.KEY1_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
-            instance.key2 = machine.Pin(cls.KEY2_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
-            instance.key3 = machine.Pin(cls.KEY3_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
-
-            instance.joy_up = machine.Pin(cls.KEY_UP_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
-            instance.joy_down = machine.Pin(cls.KEY_DOWN_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
-            instance.joy_left = machine.Pin(cls.KEY_LEFT_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
-            instance.joy_right = machine.Pin(cls.KEY_RIGHT_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
-            instance.joy_press = machine.Pin(cls.KEY_PRESS_PIN, machine.Pin.IN, machine.Pin.PULL_UP)            
-
-            cls._instance.override_ind = False
-
-            # Track state over time so we can apply input delays/ignores as needed
-            cls._instance.cur_input = None           # Track which direction or button was last pressed
-            cls._instance.cur_input_started = None   # Track when that input began
-            cls._instance.last_input_time = int(time.time() * 1000)  # How long has it been since the last input?
-            cls._instance.first_repeat_threshold = 225  # Long-press time required before returning continuous input
-            cls._instance.next_repeat_threshold = 250  # Amount of time where we no longer consider input a continuous hold
-
-        return cls._instance
+        # Track state over time so we can apply input delays/ignores as needed
+        self.cur_input = None           # Track which direction or button was last pressed
+        self.cur_input_started = None   # Track when that input began
+        self.last_input_time = time.ticks_ms()  # How long has it been since the last input?
+        self.first_repeat_threshold = 225  # Long-press time required before returning continuous input
+        self.next_repeat_threshold = 250  # Amount of time where we no longer consider input a continuous hold
 
 
     def wait_for(self, keys=[], check_release=True, release_keys=[]) -> int:
-        # TODO: Refactor to keep control in the Controller and not here
-        from seedsigner.controller import Controller
-        controller = Controller.get_instance()
+        """
+            * keys: which inputs to wait on; ignores all other inputs
+            * check_release & release_keys: if True, subsequent loops will not return continuous/repeat
+                signals if a key in `release_keys` is held down.
+            
+            example:
+                wait_for(keys=[HardwareButtonConstants.KEY_UP, HardwareButtonConstants.KEY1], check_release=True, release_keys=[HardwareButtonConstants.KEY1])
 
+                * Holding KEY_UP will return continuous KEY_UP signals.
+                * Holding KEY1 will only yield a single KEY1 signal.
+        """
+        # TODO: `check_release` is unnecessary in v0.5.x since we always want to allow continuous signals unless `release_keys` is specified.
+        #   Assume True if `release_keys` is not empty; assume False if `release_keys` is empty
+        # TODO: Refactor to keep control in the Controller and not here
+        # from seedsigner.controller import Controller
+        # controller = Controller.get_instance()
+
+        # TODO: See note above; this is no longer the desired default in v0.5.x (default should be to allow continuous signals)
         if not release_keys:
             release_keys = keys
+
         self.override_ind = False
 
         while True:
-            cur_time = int(time.time() * 1000)
-            if cur_time - self.last_input_time > controller.screensaver_activation_ms and not controller.screensaver.is_running:
-                # Start the screensaver. Will block execution until input detected.
-                controller.start_screensaver()
+            cur_time = time.ticks_ms()
+            # if cur_time - self.last_input_time > controller.screensaver_activation_ms and not controller.screensaver.is_running:
+            #     # Start the screensaver. Will block execution until input detected.
+            #     controller.start_screensaver()
 
-                # We're back. Update last_input_time to now.
-                self.update_last_input_time()
+            #     # We're back. Update last_input_time to now.
+            #     self.update_last_input_time()
 
-                # Freeze any further processing for a moment to avoid having the wakeup
-                #   input register in the resumed UI.
-                time.sleep(self.next_repeat_threshold / 1000.0)
+            #     # Freeze any further processing for a moment to avoid having the wakeup
+            #     #   input register in the resumed UI.
+            #     time.sleep(self.next_repeat_threshold / 1000.0)
 
-                # Resume from a fresh loop
-                continue
+            #     # Resume from a fresh loop
+            #     continue
 
             for key in keys:
                 if not check_release or ((check_release and key in release_keys and HardwareButtonsConstants.release_lock) or check_release and key not in release_keys):
+                    pin = self.pins[key]
                     # when check release is False or the release lock is released (True)
-                    if self.GPIO.input(key) == GPIO.LOW or self.override_ind:
+                    if pin.value() == 0 or self.override_ind:
                         HardwareButtonsConstants.release_lock = False
                         if self.override_ind:
                             self.override_ind = False
@@ -85,8 +95,9 @@ class HardwareButtons(Singleton):
 
                         if self.cur_input != key:
                             self.cur_input = key
-                            self.cur_input_started = int(time.time() * 1000)  # in milliseconds
+                            self.cur_input_started = time.ticks_ms()  # in milliseconds
                             self.last_input_time = self.cur_input_started
+                            print(f"{key}: started {self.cur_input_started}")
                             return key
 
                         else:
@@ -115,13 +126,14 @@ class HardwareButtons(Singleton):
                                 #   round's input and **won't update any of our
                                 #   timekeeping vars**. But once we cross the threshold,
                                 #   we let the repeats fly.
+                                print("ignoring repeat")
                                 pass
 
             time.sleep(0.01) # wait 10 ms to give CPU chance to do other things
 
 
     def update_last_input_time(self):
-        self.last_input_time = int(time.time() * 1000)
+        self.last_input_time = time.ticks_ms()
 
 
     def rising_callback(channel):
@@ -143,58 +155,22 @@ class HardwareButtons(Singleton):
         return True
 
 
-    def check_for_low(self, key: int = None, keys: List[int] = None) -> bool:
+    def check_for_low(self, key: int = None, keys: list[int] = None) -> bool:
         # TODO: Rename this to `is_pressed` or something similar
         if key:
             keys = [key]
 
         for key in keys:
-            if key == HardwareButtons.KEY_UP_PIN:
-                if self.joy_up.value() != 0:
-                    return True
-
-            elif key == HardwareButtons.KEY_DOWN_PIN:
-                if self.joy_down.value() != 0:
-                    return True
-
-            elif key == HardwareButtons.KEY_LEFT_PIN:
-                if self.joy_left.value() != 0:
-                    return True
-
-            elif key == HardwareButtons.KEY_RIGHT_PIN:
-                if self.joy_right.value() != 0:
-                    return True
-
-            elif key == HardwareButtons.KEY_PRESS_PIN:
-                if self.joy_press.value() != 0:
-                    return True
-
-            elif key == HardwareButtons.KEY1_PIN:
-                if self.key1.value() != 0:
-                    return True
-
-            elif key == HardwareButtons.KEY2_PIN:
-                if self.key2.value() != 0:
-                    return True
-
-            elif key == HardwareButtons.KEY3_PIN:
-                if self.key3.value() != 0:
-                    return True
+            if self.pins[key].value() == 0:
+                return True
         return False
 
 
     def has_any_input(self) -> bool:
-        return (
-            self.joy_up.value() != 0 and
-            self.joy_down.value() != 0 and
-            self.joy_left.value() != 0 and
-            self.joy_right.value() != 0 and
-            self.joy_press.value() != 0 and
-            self.key1.value() != 0 and
-            self.key2.value() != 0 and
-            self.key3.value() != 0
-        )
-
+        for key, pin in self.pins.items():
+            if pin.value() == 0:
+                return True
+        return False
 
 
 
@@ -203,15 +179,15 @@ class HardwareButtons(Singleton):
 #   patterns to have a static constants class plus a settable global value.
 # TODO: Redundant definitions here necessary?
 class HardwareButtonsConstants:
-    KEY_UP = const(HardwareButtons.KEY_UP_PIN)
-    KEY_DOWN = const(HardwareButtons.KEY_DOWN_PIN)
-    KEY_LEFT = const(HardwareButtons.KEY_LEFT_PIN)
-    KEY_RIGHT = const(HardwareButtons.KEY_RIGHT_PIN)
-    KEY_PRESS = const(HardwareButtons.KEY_PRESS_PIN)
-    KEY1 = const(HardwareButtons.KEY1_PIN)
-    KEY2 = const(HardwareButtons.KEY2_PIN)
-    KEY3 = const(HardwareButtons.KEY3_PIN)
-    OVERRIDE = 1000
+    KEY_UP = const(1)
+    KEY_DOWN = const(2)
+    KEY_LEFT = const(3)
+    KEY_RIGHT = const(4)
+    KEY_PRESS = const(5)
+    KEY1 = const(6)
+    KEY2 = const(7)
+    KEY3 = const(8)
+    OVERRIDE = const(1000)
 
     ALL_KEYS = [
         KEY_UP,

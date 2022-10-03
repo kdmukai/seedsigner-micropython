@@ -1,5 +1,5 @@
-
 """
+    Verifies that the display, joystick, and side buttons are all wired correctly.
 """
 import lvgl as lv
 import ili9XXX
