@@ -5,26 +5,25 @@ import time
 
 from seedsigner.models.singleton import Singleton
 
+# see pin_defs.py and import the pin defs that match your build
+from .pin_defs import dev_board as pins
+# from pin_defs import manual_wiring as pins
+
+
 
 class HardwareButtons:
-    # @classmethod
-    # def get_instance(cls):
-    #     # This is the only way to access the one and only instance
-    #     if cls._instance is None:
-    #         instance = cls.__new__(cls)
-    #         cls._instance = instance
 
     def __init__(self, pin_mapping: dict = None):        
         if not pin_mapping:
             pin_mapping = {
-                HardwareButtonsConstants.KEY_UP: 13,
-                HardwareButtonsConstants.KEY_DOWN: 14,
-                HardwareButtonsConstants.KEY_LEFT: 15,
-                HardwareButtonsConstants.KEY_RIGHT: 16,
-                HardwareButtonsConstants.KEY_PRESS: 17,
-                HardwareButtonsConstants.KEY1: 3,
-                HardwareButtonsConstants.KEY2: 34,
-                HardwareButtonsConstants.KEY3: 33,
+                HardwareButtonsConstants.KEY_UP: pins["buttons"]["joy_up"],
+                HardwareButtonsConstants.KEY_DOWN: pins["buttons"]["joy_down"],
+                HardwareButtonsConstants.KEY_LEFT: pins["buttons"]["joy_left"],
+                HardwareButtonsConstants.KEY_RIGHT: pins["buttons"]["joy_right"],
+                HardwareButtonsConstants.KEY_PRESS: pins["buttons"]["joy_press"],
+                HardwareButtonsConstants.KEY1: pins["buttons"]["key1"],
+                HardwareButtonsConstants.KEY2: pins["buttons"]["key2"],
+                HardwareButtonsConstants.KEY3: pins["buttons"]["key3"],
             }
         
         self.pins = {}

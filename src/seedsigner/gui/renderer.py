@@ -1,9 +1,8 @@
 from threading import Lock
 
 import lvgl as lv
-import ili9XXX
-from ili9XXX import st7789
 
+from seedsigner.hardware.st7789 import ST7789
 from seedsigner.models import ConfigurableSingleton
 
 
@@ -22,14 +21,13 @@ class Renderer(ConfigurableSingleton):
         renderer = cls.__new__(cls)
         cls._instance = renderer
 
+        lv.init()
+
         renderer.canvas_width = 240
         renderer.canvas_height = 240
 
-        renderer.lv_screen = st7789(
-            # Saola-1R
-            mosi=11, clk=12, cs=10, dc=1, rst=2,
+        renderer.lv_screen = ST7789(
             width=renderer.canvas_width, height=renderer.canvas_height,
-            rot=ili9XXX.LANDSCAPE,
         )
 
 
