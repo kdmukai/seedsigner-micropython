@@ -174,9 +174,9 @@ class TopNav(BaseComponent):
 
     def add_to_lv_obj(self, lv_obj: lv.obj):
         self.lv_parent = lv_obj
-        obj = lv.obj(self.lv_parent)
-        obj.set_size(240, self.height)
-        obj.align(lv.ALIGN.TOP_LEFT, 0, 0)
+        self.lv_obj = lv.obj(self.lv_parent)
+        self.lv_obj.set_size(240, self.height)
+        self.lv_obj.align(lv.ALIGN.TOP_LEFT, 0, 0)
 
         style = lv.style_t()
         style.init()
@@ -184,7 +184,7 @@ class TopNav(BaseComponent):
         style.set_border_width(0)
         style.set_radius(0)
         style.set_bg_color(lv.color_hex(0x000000))
-        obj.add_style(style, 0)
+        self.lv_obj.add_style(style, 0)
 
         if self.show_back_button:
             self.back_button = Button()
@@ -192,9 +192,9 @@ class TopNav(BaseComponent):
             self.back_button.width = GUIConstants.TOP_NAV_BUTTON_SIZE
             self.back_button.height = GUIConstants.TOP_NAV_BUTTON_SIZE
             self.back_button.align = (lv.ALIGN.LEFT_MID, GUIConstants.EDGE_PADDING, -4)
-            self.back_button.add_to_lv_obj(obj)
+            self.back_button.add_to_lv_obj(self.lv_obj)
 
-        label = lv.label(obj)
+        label = lv.label(self.lv_obj)
         label.set_text(self.text)
         label.set_long_mode(lv.label.LONG.SCROLL_CIRCULAR)
         if self.back_button:
@@ -206,6 +206,5 @@ class TopNav(BaseComponent):
         label_style.set_text_font(Fonts.FONT__OPEN_SANS__SEMIBOLD__20)
         label_style.set_text_color(lv.color_hex(0xffffff))
         label.add_style(label_style, 0)
-        print(label.get_x(), label.get_width())
 
 

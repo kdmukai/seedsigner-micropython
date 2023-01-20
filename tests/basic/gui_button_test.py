@@ -75,7 +75,6 @@ btn1.align_to = (button_list_obj, lv.ALIGN.TOP_MID, 0, 0)
 btn1.add_to_lv_obj(button_list_obj)
 print(button_list_obj.get_content_height())
 
-
 btn2 = Button()
 btn2.text = "Hello, SeedSigner!"
 btn2.is_text_centered = False
@@ -85,10 +84,25 @@ btn2.add_to_lv_obj(button_list_obj)
 print(button_list_obj.get_content_height())
 
 btn3 = Button()
-btn3.text = "Next"
+btn3.text = "Hello, MicroPython!"
+btn3.is_text_centered = False
 btn3.align_to = (btn2.lv_btn, lv.ALIGN.OUT_BOTTOM_MID, 0, GUIConstants.LIST_ITEM_PADDING)
 # btn3.align_to = (button_list_obj, lv.ALIGN.BOTTOM_MID, 0, -1*GUIConstants.EDGE_PADDING)
 btn3.add_to_lv_obj(button_list_obj)
+print(button_list_obj.get_content_height())
+
+btn4 = Button()
+btn4.text = "Hello, scrolling!"
+btn4.is_text_centered = False
+btn4.align_to = (btn3.lv_btn, lv.ALIGN.OUT_BOTTOM_MID, 0, GUIConstants.LIST_ITEM_PADDING)
+btn4.add_to_lv_obj(button_list_obj)
+print(button_list_obj.get_content_height())
+
+btn5 = Button()
+btn5.text = "Hello, bottom!"
+btn5.is_text_centered = False
+btn5.align_to = (btn4.lv_btn, lv.ALIGN.OUT_BOTTOM_MID, 0, GUIConstants.LIST_ITEM_PADDING)
+btn5.add_to_lv_obj(button_list_obj)
 print(button_list_obj.get_content_height())
 
 # Can only resize to content AFTER it's all been loaded
@@ -97,7 +111,7 @@ print(button_list_obj.get_content_height())
 # button_list_obj.align_to(scr, lv.ALIGN.BOTTOM_MID, 0, -1 * GUIConstants.EDGE_PADDING)
 button_list_obj.align_to(textarea, lv.ALIGN.OUT_BOTTOM_MID, 0, GUIConstants.COMPONENT_PADDING)
 
-buttons = [btn1, btn2, btn3]
+buttons = [btn1, btn2, btn3, btn4, btn5]
 cur_selected_button = 0
 
 while True:
@@ -109,9 +123,13 @@ while True:
             buttons[cur_selected_button].set_is_selected(False)
             cur_selected_button += 1
             buttons[cur_selected_button].set_is_selected(True)
+
+            # button reports its position relative to its parent container
             btn_y = buttons[cur_selected_button].lv_btn.get_y() + button_list_obj.get_y()
-            if btn_y > 240 - (GUIConstants.BUTTON_HEIGHT + GUIConstants.EDGE_PADDING):
-                scr.scroll_to_y(btn_y + GUIConstants.BUTTON_HEIGHT + GUIConstants.EDGE_PADDING, lv.ANIM.ON)
+            print(btn_y)
+            scroll_pos = scr.get_scroll_top()
+            if btn_y - scroll_pos > 240 - (int(2.25*GUIConstants.BUTTON_HEIGHT) + GUIConstants.LIST_ITEM_PADDING):
+                scr.scroll_to_y(btn_y - 240 + int(2.25*GUIConstants.BUTTON_HEIGHT) + GUIConstants.LIST_ITEM_PADDING, lv.ANIM.ON)
     elif key == HardwareButtonsConstants.KEY_UP:
         if cur_selected_button > 0:
             buttons[cur_selected_button].set_is_selected(False)
@@ -119,7 +137,8 @@ while True:
             buttons[cur_selected_button].set_is_selected(True)
         else:
             scroll_pos = scr.get_scroll_top()
-            print(scroll_pos)
-            if scroll_pos > 0:
-                scr.scroll_to_y(scroll_pos - GUIConstants.BUTTON_HEIGHT, lv.ANIM.ON)
+            if scroll_pos > topnav.lv_obj.get_height():
+                scr.scroll_to_y(topnav.lv_obj.get_height(), lv.ANIM.ON)
+            else:
+                scr.scroll_to_y(0, lv.ANIM.ON)
 
