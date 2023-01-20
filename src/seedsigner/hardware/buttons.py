@@ -3,7 +3,6 @@ from micropython import const
 from machine import Pin
 import time
 
-from seedsigner.models.singleton import Singleton
 
 # see pin_defs.py and import the pin defs that match your build
 from .pin_defs import dev_board as pins
@@ -12,6 +11,9 @@ from .pin_defs import dev_board as pins
 
 
 class HardwareButtons:
+    """
+        Note: The HardwareButtons have to be instantiated AFTER the display!
+    """
 
     def __init__(self, pin_mapping: dict = None):        
         if not pin_mapping:

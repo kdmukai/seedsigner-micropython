@@ -28,7 +28,11 @@ dev_board = dict(
         joy_left=7,
         joy_right=3,
         joy_press=5,
-    )
+    ),
+    qr_module=dict(
+        rx=18,
+        tx=17,
+    ),
 )
 
 

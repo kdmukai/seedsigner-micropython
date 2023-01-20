@@ -1,33 +1,29 @@
-from threading import Lock
-
+# from threading import Lock
+import _thread
 import lvgl as lv
 
 from seedsigner.hardware.st7789 import ST7789
-from seedsigner.models import ConfigurableSingleton
 
 
 
-class Renderer(ConfigurableSingleton):
+class Renderer:
     buttons = None
     canvas_width = 0
     canvas_height = 0
     lv_screen = None
-    lock = Lock()
+    lock = _thread.allocate_lock()
 
 
-    @classmethod
-    def configure_instance(cls):
-        # Instantiate the one and only Renderer instance
-        renderer = cls.__new__(cls)
-        cls._instance = renderer
+    def __init__(self):
+        self.canvas_width = 240
+        self.canvas_height = 240
 
+        # Initialize LVGL
         lv.init()
 
-        renderer.canvas_width = 240
-        renderer.canvas_height = 240
-
-        renderer.lv_screen = ST7789(
-            width=renderer.canvas_width, height=renderer.canvas_height,
+        # Instantiate the LVGL-aware screen
+        self.lv_screen = ST7789(
+            width=self.canvas_width, height=self.canvas_height,
         )
 
 
