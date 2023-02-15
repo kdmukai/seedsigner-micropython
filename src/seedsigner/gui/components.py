@@ -53,6 +53,69 @@ class GUIConstants:
 
 
 
+class FontAwesomeIconConstants:
+    ANGLE_DOWN = "\uf107"
+    ANGLE_LEFT = "\uf104"
+    ANGLE_RIGHT = "\uf105"
+    ANGLE_UP = "\uf106"
+    CAMERA = "\uf030"
+    CARET_DOWN = "\uf0d7"
+    CARET_LEFT = "\uf0d9"
+    CARET_RIGHT = "\uf0da"
+    CARET_UP = "\uf0d8"
+    SOLID_CIRCLE_CHECK = "\uf058"
+    CIRCLE = "\uf111"
+    CIRCLE_CHEVRON_RIGHT = "\uf138"
+    DICE = "\uf522"
+    DICE_ONE = "\uf525"
+    DICE_TWO = "\uf528"
+    DICE_THREE = "\uf527"
+    DICE_FOUR = "\uf524"
+    DICE_FIVE = "\uf523"
+    DICE_SIX = "\uf526"
+    GEAR = "\uf013"
+    KEY = "\uf084"
+    KEYBOARD = "\uf11c"
+    LOCK = "\uf023"
+    MAP = "\uf279"
+    PAPER_PLANE = "\uf1d8"
+    PEN = "\uf304"
+    PLUS = "+"
+    POWER_OFF = "\uf011"
+    ROTATE_RIGHT = "\uf2f9"
+    SCREWDRIVER_WRENCH = "\uf7d9"
+    SQUARE = "\uf0c8"
+    SQUARE_CARET_DOWN = "\uf150"
+    SQUARE_CARET_LEFT = "\uf191"
+    SQUARE_CARET_RIGHT = "\uf152"
+    SQUARE_CARET_UP = "\uf151"
+    SQUARE_CHECK = "\uf14a"
+    TRIANGLE_EXCLAMATION = "\uf071"
+    UNLOCK = "\uf09c"
+    QRCODE = "\uf029"
+    X = "\u0058"
+    SDCARD = "\uf7c2"
+
+
+class SeedSignerCustomIconConstants:
+    LARGE_CHEVRON_LEFT = "\ue900"
+    SMALL_CHEVRON_RIGHT = "\ue901"
+    PAGE_UP = "\ue903"
+    PAGE_DOWN = "\ue902"
+    PLUS = "\ue904"
+    CIRCLE_CHECK = "\ue907"
+    CIRCLE_EXCLAMATION = "\ue908"
+    CIRCLE_X = "\ue909"
+    FINGERPRINT = "\ue90a"
+    PATH = "\ue90b"
+    BITCOIN_LOGO_STRAIGHT = "\ue90c"
+    BITCOIN_LOGO_TILTED = "\ue90d"
+
+    MIN_VALUE = LARGE_CHEVRON_LEFT
+    MAX_VALUE = BITCOIN_LOGO_TILTED
+
+
+
 class BaseComponent:
     lv_parent: lv.obj = None
 
@@ -74,9 +137,13 @@ class Fonts:
     fs_drv = lv.fs_drv_t()
     fs_driver.fs_register(fs_drv, 'S')
 
-    FONT__OPEN_SANS__REGULAR__17 = lv.font_load("S:/opensans_regular_17.bin")
+    FONT__OPEN_SANS__REGULAR__17__BPP8 = lv.font_load("S:/opensans_regular_17_bpp8.bin")
     FONT__OPEN_SANS__SEMIBOLD__18 = lv.font_load("S:/opensans_semibold_18.bin")
     FONT__OPEN_SANS__SEMIBOLD__20 = lv.font_load("S:/opensans_semibold_20.bin")
+    FONT__OPEN_SANS__SEMIBOLD__26 = lv.font_load("S:/opensans_semibold_26.bin")
+    FONT__FONT_AWESOME__24 = lv.font_load("S:/fontawesome_24.bin")
+    FONT__FONT_AWESOME__SUBSET__36 = lv.font_load("S:/fontawesome_subset_36.bin")
+    FONT__SEEDSIGNER_GLYPHS__24 = lv.font_load("S:/seedsigner_glyphs_24.bin")
 
 
 
@@ -118,9 +185,11 @@ class Button(BaseComponent):
         if self.is_selected:
             style.set_bg_color(lv.color_hex(GUIConstants.ACCENT_COLOR))
             style.set_text_color(lv.color_hex(GUIConstants.BUTTON_SELECTED_FONT_COLOR))
+            self.lv_label.set_long_mode(lv.label.LONG.SCROLL_CIRCULAR)
         else:
             style.set_bg_color(lv.color_hex(self.background_color))
             style.set_text_color(lv.color_hex(self.font_color))
+            self.lv_label.set_long_mode(lv.label.LONG.CLIP)
         self.lv_btn.add_style(style, 0)
 
 
@@ -136,24 +205,77 @@ class Button(BaseComponent):
 
         style = lv.style_t()
         style.set_pad_all(0)
-        style.set_text_font(Fonts.FONT__OPEN_SANS__SEMIBOLD__18)
+        if self.font_size == GUIConstants.BUTTON_FONT_SIZE:
+            style.set_text_font(Fonts.FONT__OPEN_SANS__SEMIBOLD__18)
+        elif self.font_size == 20:
+            style.set_text_font(Fonts.FONT__OPEN_SANS__SEMIBOLD__20)
         style.set_shadow_opa(0)
         self.lv_btn.add_style(style, 0)
 
+        self.lv_icon_label = None
+        if self.icon_name:
+            self.lv_icon_label = lv.label(self.lv_btn)
+            self.lv_icon_label.set_text(self.icon_name)
+            style = lv.style_t()
+            style.set_pad_all(0)
+            if SeedSignerCustomIconConstants.MIN_VALUE <= self.icon_name and self.icon_name <= SeedSignerCustomIconConstants.MAX_VALUE:
+                style.set_text_font(Fonts.FONT__SEEDSIGNER_GLYPHS__24)
+            else:
+                if self.icon_size == 24:
+                    style.set_text_font(Fonts.FONT__FONT_AWESOME__24)
+                elif self.icon_size == GUIConstants.ICON_LARGE_BUTTON_SIZE:
+                    style.set_text_font(Fonts.FONT__FONT_AWESOME__SUBSET__36)
+
+            style.set_shadow_opa(0)
+            self.lv_icon_label.add_style(style, 0)
+            if self.is_text_centered:
+                if not self.is_icon_inline:
+                    self.lv_icon_label.align_to(self.lv_btn, lv.ALIGN.TOP_MID, 0, GUIConstants.COMPONENT_PADDING)
+                else:
+                    self.lv_icon_label.center()
+            else:
+                self.lv_icon_label.align(lv.ALIGN.LEFT_MID, GUIConstants.COMPONENT_PADDING, 0)
+            
+            # Must update the obj to get correct x, width, etc data
+            self.lv_icon_label.update_layout()
+
+        self.lv_label = lv.label(self.lv_btn)
+        self.lv_label.set_long_mode(lv.label.LONG.CLIP)
+        self.lv_label.set_text(self.text)
+
+        if self.is_text_centered:
+            if self.lv_icon_label and not self.is_icon_inline:
+                # Text has to be rendered centered below the icon
+                self.lv_label.align_to(self.lv_icon_label, lv.ALIGN.OUT_BOTTOM_MID, 0, int(GUIConstants.COMPONENT_PADDING/2))
+            else:
+                self.lv_label.center()
+        else:
+            if self.lv_icon_label and self.is_icon_inline:
+                self.lv_label.set_width(self.width - GUIConstants.COMPONENT_PADDING - self.lv_icon_label.get_x() - self.lv_icon_label.get_width() - GUIConstants.COMPONENT_PADDING)
+                self.lv_label.align_to(self.lv_icon_label, lv.ALIGN.OUT_RIGHT_MID, GUIConstants.COMPONENT_PADDING, 2)
+            else:
+                self.lv_label.set_width(self.width - 2*GUIConstants.COMPONENT_PADDING)
+                self.lv_label.align(lv.ALIGN.LEFT_MID, GUIConstants.COMPONENT_PADDING, 2)
+
+        # # Must update the obj to get correct x, width, etc data
+        # self.lv_btn.update_layout()
+
         self.set_is_selected_style()
 
-        label = lv.label(self.lv_btn)
-        label.set_text(self.text)
-        if self.is_text_centered:
-            label.center()
-        else:
-            label.align(lv.ALIGN.LEFT_MID, GUIConstants.COMPONENT_PADDING, 2)
-    
 
     def set_is_selected(self, is_selected: bool):
         self.is_selected = is_selected
         self.set_is_selected_style()
 
+
+
+class LargeIconButton(Button):
+    width: int = 108
+    height: int = 76
+    icon_size: int = GUIConstants.ICON_LARGE_BUTTON_SIZE
+    is_icon_inline: bool = False
+    font_size: int = 20
+    is_text_centered: bool = True
 
 
 class TopNav(BaseComponent):
@@ -188,23 +310,43 @@ class TopNav(BaseComponent):
 
         if self.show_back_button:
             self.back_button = Button()
-            self.back_button.text = "<"
+            self.back_button.text = ""
+            self.back_button.icon_name = SeedSignerCustomIconConstants.LARGE_CHEVRON_LEFT
             self.back_button.width = GUIConstants.TOP_NAV_BUTTON_SIZE
             self.back_button.height = GUIConstants.TOP_NAV_BUTTON_SIZE
             self.back_button.align = (lv.ALIGN.LEFT_MID, GUIConstants.EDGE_PADDING, -4)
             self.back_button.add_to_lv_obj(self.lv_obj)
 
+        if self.show_power_button:
+            self.power_button = Button()
+            self.power_button.text = ""
+            self.power_button.icon_name = FontAwesomeIconConstants.POWER_OFF
+            self.power_button.width = GUIConstants.TOP_NAV_BUTTON_SIZE
+            self.power_button.height = GUIConstants.TOP_NAV_BUTTON_SIZE
+            self.power_button.align = (lv.ALIGN.RIGHT_MID, -1 * GUIConstants.EDGE_PADDING, -4)
+            self.power_button.add_to_lv_obj(self.lv_obj)
+
         label = lv.label(self.lv_obj)
         label.set_text(self.text)
         label.set_long_mode(lv.label.LONG.SCROLL_CIRCULAR)
         if self.back_button:
-            label.set_width(240 - GUIConstants.TOP_NAV_BUTTON_SIZE - GUIConstants.EDGE_PADDING - GUIConstants.COMPONENT_PADDING)
+            label.set_width(240 - GUIConstants.EDGE_PADDING - GUIConstants.TOP_NAV_BUTTON_SIZE - GUIConstants.COMPONENT_PADDING)
             label.align_to(self.back_button.lv_btn, lv.ALIGN.OUT_RIGHT_MID, GUIConstants.COMPONENT_PADDING, -4)
         else:
             label.center()
         label_style = lv.style_t()
-        label_style.set_text_font(Fonts.FONT__OPEN_SANS__SEMIBOLD__20)
+        if self.font_size == GUIConstants.TOP_NAV_TITLE_FONT_SIZE:
+            style.set_text_font(Fonts.FONT__OPEN_SANS__SEMIBOLD__20)
+        elif self.font_size == 26:
+            style.set_text_font(Fonts.FONT__OPEN_SANS__SEMIBOLD__26)
         label_style.set_text_color(lv.color_hex(0xffffff))
+        label_style.set_pad_right(GUIConstants.EDGE_PADDING)
         label.add_style(label_style, 0)
 
 
+    def set_is_selected(self, is_selected: bool):
+        self.is_selected = is_selected
+        if self.show_back_button:
+            self.back_button.set_is_selected(is_selected)
+        if self.show_power_button:
+            self.power_button.set_is_selected(is_selected)
