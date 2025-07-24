@@ -1,19 +1,37 @@
 import lvgl as lv
-import ili9XXX
-from ili9XXX import st7789
-
-# see pin_defs.py and import the pin defs that match your build
-from .pin_defs import dev_board as pins
-# from pin_defs import manual_wiring as pins
+import machine
+import lcd_bus
+import st7789
 
 
 
-class ST7789(st7789):
-    """class for ST7789  240*240 1.3inch OLED displays."""
-
-    def __init__(self, width: int, height: int):
-        super().__init__(
-            **pins["st7789"],
-            width=width, height=height,
-            rot=ili9XXX.LANDSCAPE,
+class ST7789(st7789.ST7789):
+    def __init__(self, pins: dict):
+        spi_bus = machine.SPI.Bus(
+            host=pins["host"],  # SPI channel 0 vs 1
+            mosi=pins["mosi"],
+            miso=pins["miso"],
+            sck=pins["clk"]
         )
+        display_bus = lcd_bus.SPIBus(
+            spi_bus=spi_bus,
+            freq=40_000_000,  # 40MHz
+            dc=pins["dc"],
+            cs=pins["cs"],
+        )
+
+        super().__init__(
+            data_bus=display_bus,
+            display_width=pins["width"],
+            display_height=pins["height"],
+            backlight_pin=pins["backlight"],
+            color_space=lv.COLOR_FORMAT.RGB565,
+            color_byte_order=st7789.BYTE_ORDER_BGR,
+            rgb565_byte_swap=True,
+        )
+
+        self.set_rotation(3)
+
+        self.set_power(True)
+        self.init()
+        self.set_backlight(100)

@@ -13,7 +13,7 @@ class GUIConstants:
     DIRE_WARNING_COLOR = 0xff0000
     SUCCESS_COLOR = 0x00dd00
     BITCOIN_ORANGE = 0xff9416
-    ACCENT_COLOR = 0xffcc00
+    ACCENT_COLOR = 0xff6600
     TESTNET_COLOR = 0x00f100
     REGTEST_COLOR = 0x00caf1
 
@@ -135,15 +135,15 @@ class Fonts:
 
     # FS driver init
     fs_drv = lv.fs_drv_t()
-    fs_driver.fs_register(fs_drv, 'S')
+    fs_driver.fs_register(fs_drv, "S")
 
-    FONT__OPEN_SANS__REGULAR__17__BPP8 = lv.font_load("S:/opensans_regular_17_bpp8.bin")
-    FONT__OPEN_SANS__SEMIBOLD__18 = lv.font_load("S:/opensans_semibold_18.bin")
-    FONT__OPEN_SANS__SEMIBOLD__20 = lv.font_load("S:/opensans_semibold_20.bin")
-    FONT__OPEN_SANS__SEMIBOLD__26 = lv.font_load("S:/opensans_semibold_26.bin")
-    FONT__FONT_AWESOME__24 = lv.font_load("S:/fontawesome_24.bin")
-    FONT__FONT_AWESOME__SUBSET__36 = lv.font_load("S:/fontawesome_subset_36.bin")
-    FONT__SEEDSIGNER_GLYPHS__24 = lv.font_load("S:/seedsigner_glyphs_24.bin")
+    FONT__OPEN_SANS__REGULAR__17__BPP8 = lv.binfont_create("S:/seedsigner/resources/fonts/opensans_regular_17_bpp8.bin")
+    FONT__OPEN_SANS__SEMIBOLD__18 = lv.binfont_create("S:/seedsigner/resources/fonts/opensans_semibold_18.bin")
+    FONT__OPEN_SANS__SEMIBOLD__20 = lv.binfont_create("S:/seedsigner/resources/fonts/opensans_semibold_20.bin")
+    FONT__OPEN_SANS__SEMIBOLD__26 = lv.binfont_create("S:/seedsigner/resources/fonts/opensans_semibold_26.bin")
+    FONT__FONT_AWESOME__24 = lv.binfont_create("S:/seedsigner/resources/fonts/fontawesome_24.bin")
+    FONT__FONT_AWESOME__SUBSET__36 = lv.binfont_create("S:/seedsigner/resources/fonts/fontawesome_subset_36.bin")
+    FONT__SEEDSIGNER_GLYPHS__24 = lv.binfont_create("S:/seedsigner/resources/fonts/seedsigner_glyphs_24.bin")
 
 
 
@@ -152,7 +152,7 @@ class Button(BaseComponent):
     screen_x: int = 0
     screen_y: int = 0
     scroll_y: int = 0
-    width: int = 240 - 2*GUIConstants.EDGE_PADDING
+    width: int = 320 - 2*GUIConstants.EDGE_PADDING
     height: int = 32
     icon_name: str = None   # Optional icon to accompany the text
     icon_size: int = GUIConstants.ICON_INLINE_FONT_SIZE
@@ -185,17 +185,17 @@ class Button(BaseComponent):
         if self.is_selected:
             style.set_bg_color(lv.color_hex(GUIConstants.ACCENT_COLOR))
             style.set_text_color(lv.color_hex(GUIConstants.BUTTON_SELECTED_FONT_COLOR))
-            self.lv_label.set_long_mode(lv.label.LONG.SCROLL_CIRCULAR)
+            self.lv_label.set_long_mode(lv.label.LONG_MODE.SCROLL_CIRCULAR)
         else:
             style.set_bg_color(lv.color_hex(self.background_color))
             style.set_text_color(lv.color_hex(self.font_color))
-            self.lv_label.set_long_mode(lv.label.LONG.CLIP)
+            self.lv_label.set_long_mode(lv.label.LONG_MODE.CLIP)
         self.lv_btn.add_style(style, 0)
 
 
     def add_to_lv_obj(self, lv_obj: lv.obj):
         self.lv_parent = lv_obj
-        self.lv_btn = lv.btn(self.lv_parent)
+        self.lv_btn = lv.button(self.lv_parent)
         self.lv_btn.set_size(self.width, self.height)
         self.lv_btn.add_flag(lv.obj.FLAG.SNAPPABLE)
         if self.align_to:
@@ -240,7 +240,7 @@ class Button(BaseComponent):
             self.lv_icon_label.update_layout()
 
         self.lv_label = lv.label(self.lv_btn)
-        self.lv_label.set_long_mode(lv.label.LONG.CLIP)
+        self.lv_label.set_long_mode(lv.label.LONG_MODE.CLIP)
         self.lv_label.set_text(self.text)
 
         if self.is_text_centered:
@@ -270,8 +270,8 @@ class Button(BaseComponent):
 
 
 class LargeIconButton(Button):
-    width: int = 108
-    height: int = 76
+    width: int = 148
+    height: int = int((240 - GUIConstants.TOP_NAV_HEIGHT - (2 * GUIConstants.COMPONENT_PADDING) - GUIConstants.EDGE_PADDING) / 2)
     icon_size: int = GUIConstants.ICON_LARGE_BUTTON_SIZE
     is_icon_inline: bool = False
     font_size: int = 20
@@ -297,7 +297,7 @@ class TopNav(BaseComponent):
     def add_to_lv_obj(self, lv_obj: lv.obj):
         self.lv_parent = lv_obj
         self.lv_obj = lv.obj(self.lv_parent)
-        self.lv_obj.set_size(240, self.height)
+        self.lv_obj.set_size(320, self.height)
         self.lv_obj.align(lv.ALIGN.TOP_LEFT, 0, 0)
 
         style = lv.style_t()
@@ -328,9 +328,9 @@ class TopNav(BaseComponent):
 
         label = lv.label(self.lv_obj)
         label.set_text(self.text)
-        label.set_long_mode(lv.label.LONG.SCROLL_CIRCULAR)
+        label.set_long_mode(lv.label.LONG_MODE.SCROLL_CIRCULAR)
         if self.back_button:
-            label.set_width(240 - GUIConstants.EDGE_PADDING - GUIConstants.TOP_NAV_BUTTON_SIZE - GUIConstants.COMPONENT_PADDING)
+            label.set_width(320 - GUIConstants.EDGE_PADDING - GUIConstants.TOP_NAV_BUTTON_SIZE - GUIConstants.COMPONENT_PADDING)
             label.align_to(self.back_button.lv_btn, lv.ALIGN.OUT_RIGHT_MID, GUIConstants.COMPONENT_PADDING, -4)
         else:
             label.center()

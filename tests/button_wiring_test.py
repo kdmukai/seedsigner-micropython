@@ -56,7 +56,7 @@ label_style.set_text_font(font)
 label_style.set_text_color(lv.color_hex(0xffffff))
 label.add_style(label_style, 0)
 
-obj = lv.btn(scr)
+obj = lv.button(scr)
 obj.set_size(240 - 2*EDGE_PADDING, 32)
 obj.add_flag(lv.obj.FLAG.SNAPPABLE)
 obj.center()
